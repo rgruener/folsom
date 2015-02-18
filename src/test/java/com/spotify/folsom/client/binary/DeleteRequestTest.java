@@ -27,13 +27,15 @@ import java.util.List;
 
 import io.netty.buffer.ByteBuf;
 
+import static com.spotify.folsom.ByteEncoders.utf8;
+
 
 public class DeleteRequestTest extends RequestTestTemplate {
   private static final String KEY = "foo";
 
   @Test
   public void testBuffer() throws Exception {
-    DeleteRequest req = new DeleteRequest(KEY, OPAQUE);
+    DeleteRequest req = new DeleteRequest(utf8(KEY), OPAQUE);
     MemcacheEncoder memcacheEncoder = new MemcacheEncoder();
     List<Object> out = Lists.newArrayList();
     memcacheEncoder.encode(ctx, req, out);

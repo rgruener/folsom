@@ -26,6 +26,7 @@ import org.mockito.MockitoAnnotations;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.spotify.folsom.ByteEncoders.utf8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.mock;
@@ -52,17 +53,16 @@ public class ContinuumTest {
   private static final AddressAndClient AAC4 = new AddressAndClient(ADDRESS4, CLIENT4);
   private static final AddressAndClient AAC5 = new AddressAndClient(ADDRESS5, CLIENT5);
 
-  private static final String KEY1 = "key1";
-  private static final String KEY2 = "key2";
-  private static final String KEY3 = "key3";
-  private static final String KEY4 = "key4";
-  private static final String KEY5 = "key5";
-  private static final String KEY6 = "key6";
-  private static final String KEY7 = "key7";
-  private static final String KEY8 = "key8";
-  private static final String KEY9 = "key9";
-  private static final String KEY10 = "key10";
-  private static final String KEY11 = "key11";
+  private static final byte[] KEY4 = utf8("key4");
+  private static final byte[] KEY1 = utf8("key1");
+  private static final byte[] KEY2 = utf8("key2");
+  private static final byte[] KEY3 = utf8("key3");
+  private static final byte[] KEY5 = utf8("key5");
+  private static final byte[] KEY6 = utf8("key6");
+  private static final byte[] KEY7 = utf8("key7");
+  private static final byte[] KEY8 = utf8("key8");
+  private static final byte[] KEY9 = utf8("key9");
+  private static final byte[] KEY10 = utf8("key10");
 
   @Before
   public void setUp() {
@@ -183,7 +183,8 @@ public class ContinuumTest {
     final List<AddressAndClient> clients = ImmutableList.of(AAC1, AAC2, AAC3);
     final Continuum c = new Continuum(clients);
 
-    List<RawMemcacheClient> actual = Arrays.asList(c.findClient("key321"), c.findClient("key477"));
+    List<RawMemcacheClient> actual = Arrays.asList(c.findClient(utf8("key321")),
+                                                   c.findClient(utf8("key477")));
     List<RawMemcacheClient> expected = Arrays.asList(CLIENT2, CLIENT3);
     assertEquals(expected, actual);
   }
@@ -196,9 +197,9 @@ public class ContinuumTest {
     final List<AddressAndClient> clients = ImmutableList.of(AAC1, AAC2, AAC3);
     final Continuum c = new Continuum(clients);
 
-    assertSame(CLIENT1, c.findClient("key1561"));
+    assertSame(CLIENT1, c.findClient(utf8("key1561")));
 
     when(CLIENT1.isConnected()).thenReturn(false);
-    assertSame(CLIENT2, c.findClient("key1561"));
+    assertSame(CLIENT2, c.findClient(utf8("key1561")));
   }
 }

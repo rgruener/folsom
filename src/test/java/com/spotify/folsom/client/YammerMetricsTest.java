@@ -15,6 +15,8 @@
  */
 package com.spotify.folsom.client;
 
+import com.google.common.base.Charsets;
+
 import com.spotify.folsom.AsciiMemcacheClient;
 import com.spotify.folsom.FakeRawMemcacheClient;
 import com.spotify.folsom.IntegrationTest;
@@ -39,7 +41,7 @@ public class YammerMetricsTest {
   @Before
   public void setUp() throws Exception {
     metrics = new YammerMetrics(new MetricsRegistry());
-    client = new DefaultAsciiMemcacheClient<>(new FakeRawMemcacheClient(), metrics, StringTranscoder.UTF8_INSTANCE);
+    client = new DefaultAsciiMemcacheClient<>(new FakeRawMemcacheClient(), metrics, StringTranscoder.UTF8_INSTANCE, Charsets.UTF_8);
     IntegrationTest.awaitConnected(client);
   }
 

@@ -27,6 +27,7 @@ import org.junit.Test;
 
 import java.util.concurrent.ExecutionException;
 
+import static com.spotify.folsom.ByteEncoders.utf8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
@@ -36,8 +37,8 @@ public class RetryingClientTest {
 
   private static final int OPAQUE = 123;
 
-  public static final GetRequest GET_REQUEST = new GetRequest("key1", OpCode.GET, -1, OPAQUE);
-  public static final GetRequest FAIL_REQUEST = new GetRequest("key2", OpCode.GET, -1, OPAQUE);
+  public static final GetRequest GET_REQUEST = new GetRequest(utf8("key1"), OpCode.GET, -1, OPAQUE);
+  public static final GetRequest FAIL_REQUEST = new GetRequest(utf8("key2"), OpCode.GET, -1, OPAQUE);
 
   @Test
   public void testSimple() throws Exception {

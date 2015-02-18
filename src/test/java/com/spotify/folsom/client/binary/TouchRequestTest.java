@@ -28,13 +28,15 @@ import java.util.List;
 
 import io.netty.buffer.ByteBuf;
 
+import static com.spotify.folsom.ByteEncoders.utf8;
+
 
 public class TouchRequestTest extends RequestTestTemplate {
   private static final String KEY = "foo";
 
   @Test
   public void testBufferNoCas() throws Exception {
-    TouchRequest req = new TouchRequest(KEY, 123, OPAQUE);
+    TouchRequest req = new TouchRequest(utf8(KEY), 123, OPAQUE);
     MemcacheEncoder memcacheEncoder = new MemcacheEncoder();
     List<Object> out = Lists.newArrayList();
     memcacheEncoder.encode(ctx, req, out);
@@ -48,7 +50,7 @@ public class TouchRequestTest extends RequestTestTemplate {
 
   @Test
   public void testBufferTtl() throws Exception {
-    GetRequest get = new GetRequest(KEY, OpCode.GET, 123, OPAQUE);
+    GetRequest get = new GetRequest(utf8(KEY), OpCode.GET, 123, OPAQUE);
     MemcacheEncoder memcacheEncoder = new MemcacheEncoder();
     List<Object> out = Lists.newArrayList();
     memcacheEncoder.encode(ctx, get, out);

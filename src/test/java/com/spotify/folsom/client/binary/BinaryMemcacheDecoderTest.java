@@ -28,6 +28,8 @@ import java.util.List;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+
+import static com.spotify.folsom.ByteEncoders.utf8;
 import static org.junit.Assert.assertEquals;
 
 
@@ -45,7 +47,7 @@ public class BinaryMemcacheDecoderTest {
 
   @Test
   public void test() throws Exception {
-    GetRequest request = new GetRequest(KEY, OpCode.GET, 123, OPAQUE);
+    GetRequest request = new GetRequest(utf8(KEY), OpCode.GET, 123, OPAQUE);
     BinaryMemcacheDecoder decoder = new BinaryMemcacheDecoder();
 
     ByteBuf cb = Unpooled.buffer(30);

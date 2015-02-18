@@ -27,6 +27,8 @@ import java.util.List;
 
 import io.netty.buffer.ByteBuf;
 
+import static com.spotify.folsom.ByteEncoders.utf8;
+
 
 public class SetRequestTest extends RequestTestTemplate {
   private static final String KEY = "foo";
@@ -45,7 +47,7 @@ public class SetRequestTest extends RequestTestTemplate {
   private void verifySetRequest(long cas) throws Exception {
     SetRequest req = new SetRequest(
       OpCode.ADD,
-      KEY,
+      utf8(KEY),
       TRANSCODER.encode(VALUE),
       1000,
       cas,

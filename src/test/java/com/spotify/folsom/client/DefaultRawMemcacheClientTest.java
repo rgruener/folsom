@@ -42,6 +42,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import static com.spotify.folsom.ByteEncoders.utf8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -66,7 +67,7 @@ public class DefaultRawMemcacheClientTest {
     RawMemcacheClient rawClient = DefaultRawMemcacheClient.connect(
         HostAndPort.fromParts("localhost", embeddedServer.getPort()), 5000, false, null, 3000).get();
 
-    DefaultAsciiMemcacheClient<String> asciiClient = new DefaultAsciiMemcacheClient<>(rawClient, new NoopMetrics(), new StringTranscoder(Charsets.UTF_8));
+    DefaultAsciiMemcacheClient<String> asciiClient = new DefaultAsciiMemcacheClient<>(rawClient, new NoopMetrics(), StringTranscoder.UTF8_INSTANCE, Charsets.UTF_8);
 
     List<ListenableFuture<?>> futures = Lists.newArrayList();
     for (int i = 0; i < 2; i++) {
@@ -109,7 +110,7 @@ public class DefaultRawMemcacheClientTest {
 
   private void sendFailRequest(final String exceptionString, RawMemcacheClient rawClient) throws InterruptedException {
     try {
-      rawClient.send(new AsciiRequest<String>("key") {
+      rawClient.send(new AsciiRequest<String>(utf8("key")) {
         @Override
         protected void handle(AsciiResponse response) throws IOException {
           throw new IOException(exceptionString);
@@ -137,7 +138,7 @@ public class DefaultRawMemcacheClientTest {
     RawMemcacheClient rawClient = DefaultRawMemcacheClient.connect(
         address, 5000, false, null, 1000).get();
 
-    final Future<?> future = rawClient.send(new GetRequest("foo", false));
+    final Future<?> future = rawClient.send(new GetRequest(utf8("foo"), false));
     try {
       future.get();
       fail();

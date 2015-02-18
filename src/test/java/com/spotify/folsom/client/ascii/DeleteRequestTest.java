@@ -22,12 +22,13 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
+import static com.spotify.folsom.ByteEncoders.utf8;
 import static org.junit.Assert.assertEquals;
 
 
 public class DeleteRequestTest extends RequestTestTemplate {
 
-  private DeleteRequest req = new DeleteRequest("foo");
+  private DeleteRequest req = new DeleteRequest(utf8("foo"));
 
   @Test
   public void testRequest() throws Exception {

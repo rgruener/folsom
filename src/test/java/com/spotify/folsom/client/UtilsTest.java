@@ -20,6 +20,9 @@ import org.junit.Test;
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 
+import static com.spotify.folsom.ByteEncoders.utf16;
+import static com.spotify.folsom.ByteEncoders.utf8;
+
 public class UtilsTest {
 
   @Test
@@ -50,13 +53,5 @@ public class UtilsTest {
   @Test(expected=IllegalArgumentException.class)
   public void testValidateKeyWithSpaceUTF16() throws Exception {
     Utils.validateKey(utf16("hello world"));
-  }
-
-  private byte[] utf8(final String key) {
-    return key.getBytes(Charsets.UTF_8);
-  }
-
-  private byte[] utf16(final String key) {
-    return key.getBytes(Charsets.UTF_16);
   }
 }

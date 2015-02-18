@@ -16,6 +16,8 @@
 
 package com.spotify.folsom.client.ascii;
 
+import com.google.common.base.Charsets;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
@@ -58,11 +60,9 @@ public class AsciiMemcacheDecoder extends ByteToMessageDecoder {
           }
         }
         final byte[] line = readLine(buf, readableBytes).toByteArray();
-        if (line == null) {
-          return;
-        }
+        final String errorLine = new String(line, Charsets.US_ASCII);
         if (line.length > 0) {
-          throw new IOException(String.format("Unexpected end of data block: %s", line));
+          throw new IOException(String.format("Unexpected end of data block: %s", errorLine));
         }
         valueResponse.addGetResult(key, value, cas);
         key = null;
@@ -70,13 +70,11 @@ public class AsciiMemcacheDecoder extends ByteToMessageDecoder {
         cas = 0;
       } else {
         final byte[] line = readLine(buf, readableBytes).toByteArray();
-        if (line == null) {
-          return;
-        }
+        final String errorLine = new String(line, Charsets.US_ASCII);
 
         final int firstEnd = endIndex(line, 0);
         if (firstEnd < 1) {
-          throw new IOException("Unexpected line: " + line);
+          throw new IOException("Unexpected line: " + errorLine);
         }
 
         final char firstChar = (char) line[0];
@@ -86,7 +84,7 @@ public class AsciiMemcacheDecoder extends ByteToMessageDecoder {
             long numeric = Long.valueOf(new String(line));
             out.add(new NumericAsciiResponse(numeric));
           } catch (NumberFormatException e) {
-            throw new IOException("Unexpected line: " + line, e);
+            throw new IOException("Unexpected line: " + errorLine, e);
           }
         } else if (firstEnd == 3) {
           expect(line, "END");
@@ -102,19 +100,19 @@ public class AsciiMemcacheDecoder extends ByteToMessageDecoder {
           final int keyEnd = endIndex(line, keyStart);
           final byte[] key = Arrays.copyOfRange(line, keyStart, keyEnd);
           if (key.length == 0) {
-            throw new IOException("Unexpected line: " + line);
+            throw new IOException("Unexpected line: " + errorLine);
           }
 
           final int flagsStart = keyEnd + 1;
           final int flagsEnd = endIndex(line, flagsStart);
           if (flagsEnd <= flagsStart) {
-            throw new IOException("Unexpected line: " + line);
+            throw new IOException("Unexpected line: " + errorLine);
           }
 
           final int sizeStart = flagsEnd + 1;
           final int sizeEnd = endIndex(line, sizeStart);
           if (sizeEnd <= sizeStart) {
-            throw new IOException("Unexpected line: " + line);
+            throw new IOException("Unexpected line: " + errorLine);
           }
           final int size = (int) parseLong(line, sizeStart, sizeEnd);
 
@@ -130,7 +128,7 @@ public class AsciiMemcacheDecoder extends ByteToMessageDecoder {
           this.cas = cas;
         } else if (valueMode) {
           // when in valueMode, the only valid responses are "END" and "VALUE"
-          throw new IOException("Unexpected line: " + line);
+          throw new IOException("Unexpected line: " + errorLine);
         } else if (firstEnd == 6) {
           if (firstChar == 'S') {
             expect(line, "STORED");
@@ -160,7 +158,7 @@ public class AsciiMemcacheDecoder extends ByteToMessageDecoder {
           out.add(AsciiResponse.NOT_STORED);
           return;
         } else {
-          throw new IOException("Unexpected line: " + line);
+          throw new IOException("Unexpected line: " + errorLine);
         }
       }
     }
@@ -170,7 +168,7 @@ public class AsciiMemcacheDecoder extends ByteToMessageDecoder {
     final int length = compareTo.length();
     for (int i = 0; i < length; i++) {
       if (line[i] != compareTo.charAt(i)) {
-        throw new IOException("Unexpected line: " + line);
+        throw new IOException("Unexpected line: " + new String(line));
       }
     }
   }
@@ -181,7 +179,7 @@ public class AsciiMemcacheDecoder extends ByteToMessageDecoder {
     for (int i = from; i < to; i++) {
       final int digit = line[i] - '0';
       if (digit < 0 || digit > 9) {
-        throw new IOException("Unexpected line: " + line);
+        throw new IOException("Unexpected line: " + new String(line));
       }
       res *= 10;
       res += digit;

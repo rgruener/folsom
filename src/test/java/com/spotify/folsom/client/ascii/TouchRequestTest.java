@@ -22,12 +22,13 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
+import static com.spotify.folsom.ByteEncoders.utf8;
 import static org.junit.Assert.assertEquals;
 
 
 public class TouchRequestTest extends RequestTestTemplate {
 
-  private TouchRequest req = new TouchRequest("foo", 123);
+  private TouchRequest req = new TouchRequest(utf8("foo"), 123);
 
   @Test
   public void testRequest() throws Exception {

@@ -26,6 +26,8 @@ import org.junit.Test;
 import java.util.List;
 
 import io.netty.buffer.ByteBuf;
+
+import static com.spotify.folsom.ByteEncoders.utf8;
 import static org.junit.Assert.assertEquals;
 
 
@@ -35,7 +37,7 @@ public class IncrRequestTest extends RequestTestTemplate {
   @Test
   public void testBuffer() throws Exception {
     IncrRequest req = new IncrRequest(
-      KEY,
+      utf8(KEY),
       OpCode.INCREMENT,
       2,
       3,

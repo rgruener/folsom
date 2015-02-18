@@ -67,7 +67,9 @@ public class GetRequest
 
     ValueResponse valueResponse = values.get(0);
     if (!Arrays.equals(valueResponse.key, key)) {
-      throw new IOException("Expected key " + key + " but got " + valueResponse.key);
+      final String error = String
+          .format("Expected key %s but got %s", new String(key), new String(valueResponse.key));
+      throw new IOException(error);
     }
 
     succeed(GetResult.success(valueResponse.value, valueResponse.cas));
