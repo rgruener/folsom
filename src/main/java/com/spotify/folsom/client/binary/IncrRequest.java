@@ -31,7 +31,7 @@ public class IncrRequest extends BinaryRequest<Long> {
   private final long initial;
   private final int ttl;
 
-  public IncrRequest(final String key,
+  public IncrRequest(final byte[] key,
                      final byte opcode,
                      final long by,
                      final long initial,
@@ -48,7 +48,7 @@ public class IncrRequest extends BinaryRequest<Long> {
   public ByteBuf writeRequest(final ByteBufAllocator alloc, final ByteBuffer dst) {
     final int expiration = Utils.ttlToExpiration(ttl);
 
-    final int keyLength = key.length();
+    final int keyLength = key.length;
 
     final int extraLength = 8 + 8 + 4; // by + initial + expiration
 
@@ -58,7 +58,7 @@ public class IncrRequest extends BinaryRequest<Long> {
     dst.putLong(by);
     dst.putLong(initial);
     dst.putInt(expiration);
-    Utils.writeKeyString(dst, key);
+    dst.put(key);
     return toBuffer(alloc, dst);
   }
 

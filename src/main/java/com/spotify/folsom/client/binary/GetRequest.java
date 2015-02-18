@@ -34,7 +34,7 @@ public class GetRequest
   private final byte opcode;
   private final int ttl;
 
-  public GetRequest(final String key,
+  public GetRequest(final byte[] key,
                     final byte opcode,
                     final int ttl,
                     final int opaque) {
@@ -45,7 +45,7 @@ public class GetRequest
 
   @Override
   public ByteBuf writeRequest(final ByteBufAllocator alloc, final ByteBuffer dst) {
-    final int keyLength = key.length();
+    final int keyLength = key.length;
 
     int expiration;
     int extrasLength;
@@ -65,7 +65,7 @@ public class GetRequest
       dst.putInt(expiration);
     }
 
-    Utils.writeKeyString(dst, key);
+    dst.put(key);
     return toBuffer(alloc, dst);
   }
 

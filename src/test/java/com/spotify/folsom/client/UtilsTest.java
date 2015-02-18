@@ -17,27 +17,46 @@ package com.spotify.folsom.client;
 
 import org.junit.Test;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 
 public class UtilsTest {
 
   @Test
   public void testValidateKey() throws Exception {
-    Utils.validateKey("hello");
+    Utils.validateKey(utf8("hello"));
+  }
+
+  @Test
+  public void testValidateKeyUTF16() throws Exception {
+    Utils.validateKey(utf16("hello"));
   }
 
   @Test(expected=IllegalArgumentException.class)
   public void testValidateKeyTooLongKey() throws Exception {
-    Utils.validateKey(Strings.repeat("hello", 100));
+    Utils.validateKey(utf8(Strings.repeat("hello", 100)));
   }
 
-  @Test(expected=IllegalArgumentException.class)
-  public void testValidateKeyInvalidChars() throws Exception {
-    Utils.validateKey("hällo");
+  @Test
+  public void testValidateKeyUTF8() throws Exception {
+    Utils.validateKey(utf8("hällo"));
   }
 
   @Test(expected=IllegalArgumentException.class)
   public void testValidateKeyWithSpace() throws Exception {
-    Utils.validateKey("hello world");
+    Utils.validateKey(utf8("hello world"));
+  }
+
+  @Test(expected=IllegalArgumentException.class)
+  public void testValidateKeyWithSpaceUTF16() throws Exception {
+    Utils.validateKey(utf16("hello world"));
+  }
+
+  private byte[] utf8(final String key) {
+    return key.getBytes(Charsets.UTF_8);
+  }
+
+  private byte[] utf16(final String key) {
+    return key.getBytes(Charsets.UTF_16);
   }
 }

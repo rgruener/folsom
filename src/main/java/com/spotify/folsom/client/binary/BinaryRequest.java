@@ -26,7 +26,7 @@ public abstract class BinaryRequest<V> extends Request<V> {
   protected static final int HEADER_SIZE = 24;
   protected static final byte MAGIC_NUMBER = (byte) 0x80;
 
-  protected BinaryRequest(final String key, int opaque) {
+  protected BinaryRequest(final byte[] key, int opaque) {
     super(key, opaque);
   }
 

@@ -25,10 +25,10 @@ import java.nio.ByteBuffer;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public abstract class Request<V> extends AbstractFuture<V> {
-  protected final String key;
+  protected final byte[] key;
   protected final int opaque;
 
-  public Request(String key, int opaque) {
+  public Request(byte[] key, int opaque) {
     this.key = checkNotNull(key, "key");
     this.opaque = (opaque << 8) & 0xFFFFFF00;
     Utils.validateKey(key);
@@ -38,7 +38,7 @@ public abstract class Request<V> extends AbstractFuture<V> {
     return toBuffer(alloc, dst, 0);
   }
 
-  public String getKey() {
+  public byte[] getKey() {
     return key;
   }
 

@@ -27,6 +27,7 @@ import io.netty.buffer.ByteBufAllocator;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.List;
 
 public class MultigetRequest
@@ -36,16 +37,16 @@ public class MultigetRequest
   private static final byte[] GET = "get ".getBytes(Charsets.US_ASCII);
   private static final byte[] CAS_GET = "gets ".getBytes(Charsets.US_ASCII);
 
-  private final List<String> keys;
+  private final List<byte[]> keys;
   private final byte[] cmd;
 
-  private MultigetRequest(final List<String> keys, byte[] cmd) {
+  private MultigetRequest(final List<byte[]> keys, byte[] cmd) {
     super(keys.get(0));
     this.cmd = cmd;
     this.keys = keys;
   }
 
-  public static MultigetRequest create(final List<String> keys, boolean withCas) {
+  public static MultigetRequest create(final List<byte[]> keys, boolean withCas) {
     byte[] cmd = withCas ? CAS_GET : GET;
     for (int i = 1; i < keys.size(); i++) {
       Utils.validateKey(keys.get(i));
@@ -60,9 +61,9 @@ public class MultigetRequest
   @Override
   public ByteBuf writeRequest(final ByteBufAllocator alloc, final ByteBuffer dst) {
     dst.put(cmd);
-    for (final String key : keys) {
+    for (final byte[] key : keys) {
       dst.put(SPACE_BYTES);
-      Utils.writeKeyString(dst, key);
+      dst.put(key);
     }
     dst.put(NEWLINE_BYTES);
 
@@ -98,11 +99,11 @@ public class MultigetRequest
     succeed(result);
   }
 
-  private int findKey(int index, final String key) {
+  private int findKey(int index, final byte[] key) {
     final int size = keys.size();
     while (index < size) {
-      final String candidate = keys.get(index);
-      if (candidate.equals(key)) {
+      final byte[] candidate = keys.get(index);
+      if (Arrays.equals(candidate, key)) {
         return index;
       }
       index++;
@@ -111,12 +112,12 @@ public class MultigetRequest
   }
 
   @Override
-  public List<String> getKeys() {
+  public List<byte[]> getKeys() {
     return keys;
   }
 
   @Override
-  public Request<List<GetResult<byte[]>>> create(List<String> keys) {
+  public Request<List<GetResult<byte[]>>> create(List<byte[]> keys) {
     return new MultigetRequest(keys, cmd);
   }
 }

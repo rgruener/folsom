@@ -18,12 +18,12 @@ package com.spotify.folsom.client.ascii;
 
 import com.google.common.base.Charsets;
 import com.spotify.folsom.GetResult;
-import com.spotify.folsom.client.Utils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.List;
 
 public class GetRequest
@@ -35,7 +35,7 @@ public class GetRequest
 
   private final byte[] cmd;
 
-  public GetRequest(final String key, boolean withCas) {
+  public GetRequest(final byte[] key, boolean withCas) {
     super(key);
     this.cmd = withCas ? CAS_GET : GET;
   }
@@ -43,7 +43,7 @@ public class GetRequest
   @Override
   public ByteBuf writeRequest(final ByteBufAllocator alloc, final ByteBuffer dst) {
     dst.put(cmd);
-    Utils.writeKeyString(dst, key);
+    dst.put(key);
     dst.put(NEWLINE_BYTES);
     return toBuffer(alloc, dst);
   }
@@ -66,7 +66,7 @@ public class GetRequest
     }
 
     ValueResponse valueResponse = values.get(0);
-    if (!valueResponse.key.equals(key)) {
+    if (!Arrays.equals(valueResponse.key, key)) {
       throw new IOException("Expected key " + key + " but got " + valueResponse.key);
     }
 

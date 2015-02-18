@@ -36,16 +36,16 @@ public class MultigetRequest
         implements MultiRequest<GetResult<byte[]>> {
 
   private final int ttl;
-  private final List<String> keys;
+  private final List<byte[]> keys;
 
-  private MultigetRequest(final List<String> keys,
+  private MultigetRequest(final List<byte[]> keys,
                           final int ttl, final int opaque) {
     super(keys.get(0), opaque);
     this.keys = keys;
     this.ttl = ttl;
   }
 
-  public static MultigetRequest create(final List<String> keys,
+  public static MultigetRequest create(final List<byte[]> keys,
                                        final int ttl, final int opaque) {
     for (int i = 1; i < keys.size(); i++) {
       Utils.validateKey(keys.get(i));
@@ -73,8 +73,8 @@ public class MultigetRequest
     }
 
     int sequenceNumber = numKeys;
-    for (final String key : keys) {
-      final int keyLength = key.length();
+    for (final byte[] key : keys) {
+      final int keyLength = key.length;
       final int totalLength = keyLength + extrasLength;
 
       final int opaque = this.opaque | --sequenceNumber;
@@ -92,7 +92,7 @@ public class MultigetRequest
       if (hasTTL) {
         dst.putInt(expiration);
       }
-      Utils.writeKeyString(dst, key);
+      dst.put(key);
     }
 
     return toBuffer(alloc, dst);
@@ -132,12 +132,12 @@ public class MultigetRequest
   }
 
   @Override
-  public List<String> getKeys() {
+  public List<byte[]> getKeys() {
     return keys;
   }
 
   @Override
-  public Request<List<GetResult<byte[]>>> create(List<String> keys) {
+  public Request<List<GetResult<byte[]>>> create(List<byte[]> keys) {
     return new MultigetRequest(keys, ttl, opaque);
   }
 }

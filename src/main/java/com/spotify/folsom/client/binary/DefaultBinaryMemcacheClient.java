@@ -28,6 +28,7 @@ import com.spotify.folsom.Transcoder;
 import com.spotify.folsom.client.OpCode;
 import com.spotify.folsom.client.TransformerUtil;
 
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -45,17 +46,20 @@ public class DefaultBinaryMemcacheClient<V> implements BinaryMemcacheClient<V> {
   private final Metrics metrics;
   private final Transcoder<V> valueTranscoder;
   private final TransformerUtil<V> transformerUtil;
+  private final Charset keyCharset;
 
   private final AtomicInteger opaqueGenerator = new AtomicInteger();
 
   public DefaultBinaryMemcacheClient(final RawMemcacheClient rawMemcacheClient,
                                      final Metrics metrics,
-                                     final Transcoder<V> valueTranscoder
+                                     final Transcoder<V> valueTranscoder,
+                                     final Charset keyCharset
   ) {
     this.rawMemcacheClient = rawMemcacheClient;
     this.metrics = metrics;
     this.valueTranscoder = valueTranscoder;
     this.transformerUtil = new TransformerUtil<>(valueTranscoder);
+    this.keyCharset = keyCharset;
   }
 
   /*
@@ -121,7 +125,7 @@ public class DefaultBinaryMemcacheClient<V> implements BinaryMemcacheClient<V> {
                                                 final V value,
                                                 final int ttl,
                                                 final long cas) {
-    final String keyBytes = encodeKey(key);
+    final byte[] keyBytes = encodeKey(key);
     checkNotNull(value);
 
     final byte[] valueBytes = valueTranscoder.encode(value);
@@ -164,7 +168,7 @@ public class DefaultBinaryMemcacheClient<V> implements BinaryMemcacheClient<V> {
   }
 
   private ListenableFuture<GetResult<V>> getInternal(final String key, final int ttl) {
-    final String keyBytes = encodeKey(key);
+    final byte[] keyBytes = encodeKey(key);
     final ListenableFuture<GetResult<byte[]>> future =
             rawMemcacheClient.send(new GetRequest(keyBytes, OpCode.GET, ttl, makeOpaque()));
     metrics.measureGetFuture(future);
@@ -182,7 +186,7 @@ public class DefaultBinaryMemcacheClient<V> implements BinaryMemcacheClient<V> {
       return Futures.immediateFuture(Collections.<GetResult<V>>emptyList());
     }
 
-    final List<String> rawKeys = Lists.newArrayList();
+    final List<byte[]> rawKeys = Lists.newArrayList();
     for (final String key : keys) {
       rawKeys.add(encodeKey(key));
     }
@@ -213,16 +217,16 @@ public class DefaultBinaryMemcacheClient<V> implements BinaryMemcacheClient<V> {
    */
   @Override
   public ListenableFuture<MemcacheStatus> touch(final String key, final int ttl) {
-    final String keyBytes = encodeKey(key);
+    final byte[] keyBytes = encodeKey(key);
     TouchRequest request = new TouchRequest(keyBytes, ttl, makeOpaque());
     ListenableFuture<MemcacheStatus> future = rawMemcacheClient.send(request);
     metrics.measureTouchFuture(future);
     return future;
   }
 
-  private String encodeKey(final String key) {
-    checkNotNull(key, "key may not be null");
-    return key;
+  private byte[] encodeKey(final String key) {
+    checkNotNull(key, "key may not encodeKeybe null");
+    return key.getBytes(keyCharset);
   }
 
   /*
@@ -251,7 +255,7 @@ public class DefaultBinaryMemcacheClient<V> implements BinaryMemcacheClient<V> {
                                               final long initial,
                                               final int ttl) {
 
-    final String keyBytes = encodeKey(key);
+    final byte[] keyBytes = encodeKey(key);
     final ListenableFuture<Long> future = rawMemcacheClient.send(
             new IncrRequest(keyBytes, opcode, by, initial, ttl, makeOpaque()));
     metrics.measureIncrDecrFuture(future);

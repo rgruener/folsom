@@ -54,8 +54,8 @@ public class Continuum {
     return r;
   }
 
-  public RawMemcacheClient findClient(final String key) {
-    final int keyHash = Hasher.hash(toBytes(key)).asInt();
+  public RawMemcacheClient findClient(final byte[] key) {
+    final int keyHash = Hasher.hash(key).asInt();
 
     Entry<Integer, RawMemcacheClient> entry = ringOfFire.ceilingEntry(keyHash);
     if (entry == null) {

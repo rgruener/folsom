@@ -16,22 +16,24 @@
 
 package com.spotify.folsom.client.ascii;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 
-import java.io.IOException;
-import java.util.List;
-
 public class AsciiMemcacheDecoder extends ByteToMessageDecoder {
 
-  private final StringBuilder line = new StringBuilder();
+  private final ByteArrayOutputStream line = new ByteArrayOutputStream();
   private boolean consumed = false;
   private boolean valueMode = false;
 
   private ValueAsciiResponse valueResponse = new ValueAsciiResponse();
 
-  private String key = null;
+  private byte[] key = null;
   private byte[] value = null;
   private long cas = 0;
   private int valueOffset;
@@ -55,11 +57,11 @@ public class AsciiMemcacheDecoder extends ByteToMessageDecoder {
             return;
           }
         }
-        final StringBuilder line = readLine(buf, readableBytes);
+        final byte[] line = readLine(buf, readableBytes).toByteArray();
         if (line == null) {
           return;
         }
-        if (line.length() > 0) {
+        if (line.length > 0) {
           throw new IOException(String.format("Unexpected end of data block: %s", line));
         }
         valueResponse.addGetResult(key, value, cas);
@@ -67,7 +69,7 @@ public class AsciiMemcacheDecoder extends ByteToMessageDecoder {
         value = null;
         cas = 0;
       } else {
-        final StringBuilder line = readLine(buf, readableBytes);
+        final byte[] line = readLine(buf, readableBytes).toByteArray();
         if (line == null) {
           return;
         }
@@ -77,11 +79,11 @@ public class AsciiMemcacheDecoder extends ByteToMessageDecoder {
           throw new IOException("Unexpected line: " + line);
         }
 
-        final char firstChar = line.charAt(0);
+        final char firstChar = (char) line[0];
 
         if (Character.isDigit(firstChar)) {
           try {
-            long numeric = Long.valueOf(line.toString());
+            long numeric = Long.valueOf(new String(line));
             out.add(new NumericAsciiResponse(numeric));
           } catch (NumberFormatException e) {
             throw new IOException("Unexpected line: " + line, e);
@@ -98,8 +100,8 @@ public class AsciiMemcacheDecoder extends ByteToMessageDecoder {
           // VALUE <key> <flags> <bytes> [<cas unique>]\r\n
           final int keyStart = firstEnd + 1;
           final int keyEnd = endIndex(line, keyStart);
-          final String key = line.substring(keyStart, keyEnd);
-          if (key.isEmpty()) {
+          final byte[] key = Arrays.copyOfRange(line, keyStart, keyEnd);
+          if (key.length == 0) {
             throw new IOException("Unexpected line: " + line);
           }
 
@@ -164,20 +166,20 @@ public class AsciiMemcacheDecoder extends ByteToMessageDecoder {
     }
   }
 
-  private void expect(final StringBuilder line, final String compareTo) throws IOException {
+  private void expect(final byte[] line, final String compareTo) throws IOException {
     final int length = compareTo.length();
     for (int i = 0; i < length; i++) {
-      if (line.charAt(i) != compareTo.charAt(i)) {
+      if (line[i] != compareTo.charAt(i)) {
         throw new IOException("Unexpected line: " + line);
       }
     }
   }
 
-  private long parseLong(final StringBuilder line,
+  private long parseLong(final byte[] line,
                          final int from, final int to) throws IOException {
     long res = 0;
     for (int i = from; i < to; i++) {
-      final int digit = line.charAt(i) - '0';
+      final int digit = line[i] - '0';
       if (digit < 0 || digit > 9) {
         throw new IOException("Unexpected line: " + line);
       }
@@ -187,19 +189,20 @@ public class AsciiMemcacheDecoder extends ByteToMessageDecoder {
     return res;
   }
 
-  private int endIndex(final StringBuilder line, final int from) {
-    final int length = line.length();
+  private int endIndex(final byte[] line, final int from) {
+    final int length = line.length;
     for (int i = from; i < length; i++) {
-      if (line.charAt(i) == ' ') {
+      if (line[i] == ' ') {
         return i;
       }
     }
     return length;
   }
 
-  private StringBuilder readLine(final ByteBuf buf, final int available) throws IOException {
+  private ByteArrayOutputStream readLine(final ByteBuf buf,
+                                         final int available) throws IOException {
     if (consumed) {
-      line.setLength(0);
+      line.reset();
       consumed = false;
     }
     for (int i = 0; i < available - 1; i++) {
@@ -211,7 +214,7 @@ public class AsciiMemcacheDecoder extends ByteToMessageDecoder {
         }
         throw new IOException("Expected newline, got something else");
       }
-      line.append(b);
+      line.write(b);
     }
     return null;
   }

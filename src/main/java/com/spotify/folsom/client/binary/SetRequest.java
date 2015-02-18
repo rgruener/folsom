@@ -35,7 +35,7 @@ public class SetRequest
   private final long cas;
 
   public SetRequest(final byte opcode,
-                    final String key,
+                    final byte[] key,
                     final byte[] value,
                     final int ttl,
                     final long cas,
@@ -51,7 +51,7 @@ public class SetRequest
   public ByteBuf writeRequest(final ByteBufAllocator alloc, final ByteBuffer dst) {
     final int expiration = Utils.ttlToExpiration(ttl);
 
-    final int keyLength = key.length();
+    final int keyLength = key.length;
 
     final int valueLength = value.length;
 
@@ -66,7 +66,7 @@ public class SetRequest
       dst.putInt(0); // byte 24-27, flags
       dst.putInt(expiration); // byte 28-31, expiration
     }
-    Utils.writeKeyString(dst, key);
+    dst.put(key);
     if (dst.remaining() >= valueLength) {
       dst.put(value);
       return toBuffer(alloc, dst);

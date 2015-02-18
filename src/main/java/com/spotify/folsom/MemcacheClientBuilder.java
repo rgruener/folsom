@@ -73,6 +73,7 @@ public class MemcacheClientBuilder<V> {
   private Executor executor;
 
   private long timeoutMillis = 3000;
+  private Charset keyCharset = Charsets.UTF_8;
 
   /**
    * Create a client builder for byte array values.
@@ -228,11 +229,22 @@ public class MemcacheClientBuilder<V> {
   }
 
   /**
+   * Define the charset encoding for keys. Default is UTF-8.
+   * @param keyCharset The charset encoding for keys. The default is UTF-8.
+   * @return itself
+   */
+  public MemcacheClientBuilder<V> withKeyCharset(final Charset keyCharset) {
+    this.keyCharset = keyCharset;
+    return this;
+  }
+
+  /**
    * Create a client that uses the binary memcache protocol.
    * @return a {@link com.spotify.folsom.BinaryMemcacheClient}
    */
   public BinaryMemcacheClient<V> connectBinary() {
-    return new DefaultBinaryMemcacheClient<>(connectRaw(true), metrics, valueTranscoder);
+    return new DefaultBinaryMemcacheClient<>(connectRaw(true), metrics,
+                                             valueTranscoder, keyCharset);
   }
 
   /**
@@ -240,7 +252,8 @@ public class MemcacheClientBuilder<V> {
    * @return a {@link com.spotify.folsom.AsciiMemcacheClient}
    */
   public AsciiMemcacheClient<V> connectAscii() {
-    return new DefaultAsciiMemcacheClient<>(connectRaw(false), metrics, valueTranscoder);
+    return new DefaultAsciiMemcacheClient<>(connectRaw(false), metrics,
+                                            valueTranscoder, keyCharset);
   }
 
   /**

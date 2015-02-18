@@ -18,7 +18,6 @@ package com.spotify.folsom.client.ascii;
 
 import com.google.common.base.Charsets;
 import com.spotify.folsom.MemcacheStatus;
-import com.spotify.folsom.client.Utils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 
@@ -29,14 +28,14 @@ public class DeleteRequest extends AsciiRequest<MemcacheStatus> {
 
   private static final byte[] CMD_BYTES = "delete ".getBytes(Charsets.US_ASCII);
 
-  public DeleteRequest(final String key) {
+  public DeleteRequest(final byte[] key) {
     super(key);
   }
 
   @Override
   public ByteBuf writeRequest(final ByteBufAllocator alloc, final ByteBuffer dst) {
     dst.put(CMD_BYTES);
-    Utils.writeKeyString(dst, key);
+    dst.put(key);
     dst.put(NEWLINE_BYTES);
     return toBuffer(alloc, dst);
   }

@@ -30,7 +30,7 @@ public class TouchRequest extends BinaryRequest<MemcacheStatus> {
 
   private final int ttl;
 
-  public TouchRequest(final String key,
+  public TouchRequest(final byte[] key,
                       final int ttl,
                       final int opaque) {
     super(key, opaque);
@@ -39,7 +39,7 @@ public class TouchRequest extends BinaryRequest<MemcacheStatus> {
 
   @Override
   public ByteBuf writeRequest(final ByteBufAllocator alloc, final ByteBuffer dst) {
-    final int keyLength = key.length();
+    final int keyLength = key.length;
 
     final int expiration = Utils.ttlToExpiration(ttl);
     final int extrasLength = 4;
@@ -47,7 +47,7 @@ public class TouchRequest extends BinaryRequest<MemcacheStatus> {
 
     writeBinaryHeader(dst, OpCode.TOUCH, keyLength, extrasLength, totalLength, 0, opaque);
     dst.putInt(expiration);
-    Utils.writeKeyString(dst, key);
+    dst.put(key);
 
     return toBuffer(alloc, dst);
   }

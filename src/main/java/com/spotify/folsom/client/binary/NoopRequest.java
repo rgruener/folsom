@@ -27,7 +27,7 @@ import java.nio.ByteBuffer;
 public class NoopRequest extends BinaryRequest<Void> {
 
   public NoopRequest(final int opaque) {
-    super("", opaque);
+    super(new byte[]{}, opaque);
   }
 
   @Override

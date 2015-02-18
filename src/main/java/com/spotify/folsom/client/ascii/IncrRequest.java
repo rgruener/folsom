@@ -17,7 +17,6 @@
 package com.spotify.folsom.client.ascii;
 
 import com.google.common.base.Charsets;
-import com.spotify.folsom.client.Utils;
 import com.spotify.folsom.client.ascii.AsciiResponse.Type;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -34,18 +33,18 @@ public class IncrRequest extends AsciiRequest<Long> {
   private final long by;
 
   private IncrRequest(final byte[] operation,
-                      final String key,
+                      final byte[] key,
                       final long by) {
     super(key);
     this.operation = operation;
     this.by = by;
   }
 
-  public static IncrRequest createIncr(final String key, final long value) {
+  public static IncrRequest createIncr(final byte[] key, final long value) {
     return new IncrRequest(INCR_CMD, key, value);
   }
 
-  public static IncrRequest createDecr(final String key, final long value) {
+  public static IncrRequest createDecr(final byte[] key, final long value) {
     return new IncrRequest(DECR_CMD, key, value);
   }
 
@@ -53,7 +52,7 @@ public class IncrRequest extends AsciiRequest<Long> {
   public ByteBuf writeRequest(final ByteBufAllocator alloc, final ByteBuffer dst) {
     // <command name> <key> <value> [noreply]\r\n
     dst.put(operation);
-    Utils.writeKeyString(dst, key);
+    dst.put(key);
     dst.put(SPACE_BYTES);
     dst.put(String.valueOf(by).getBytes());
     dst.put(NEWLINE_BYTES);
